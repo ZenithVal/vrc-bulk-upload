@@ -20,6 +20,7 @@ using VRC.SDKBase.Editor;
 using VRC.SDKBase.Editor.Api;
 using VRC.SDKBase.Editor.BuildPipeline;
 using PeanutTools_VRC_Bulk_Upload;
+using VRC.SDKBase;
 
 public class VRC_Bulk_Upload : EditorWindow {
     enum State {
@@ -75,7 +76,17 @@ public class VRC_Bulk_Upload : EditorWindow {
             CustomGUI.LineGap();
         }
 
-        CustomGUI.LargeLabel("Avatars In Scenes");
+		if (APIUser.IsLoggedIn && !hasAgreedToCopyrightAgreement)
+		{
+			CustomGUI.WarningLabel("Must agree before building.");
+			if (CustomGUI.PrimaryButton($"VRCSDK Copyright Agreement"))
+			{
+				AskForCopyrightAgreement();
+			}
+			CustomGUI.LineGap();
+		}
+
+		CustomGUI.LargeLabel("Avatars In Scenes");
         CustomGUI.HorizontalRule();
 
         RenderAllAvatarsAndInScene();
@@ -84,7 +95,7 @@ public class VRC_Bulk_Upload : EditorWindow {
 
         int count = GetUploadableCount();
 
-        EditorGUI.BeginDisabledGroup(!APIUser.IsLoggedIn);
+        EditorGUI.BeginDisabledGroup(!APIUser.IsLoggedIn || !hasAgreedToCopyrightAgreement);
         if (CustomGUI.PrimaryButton($"Build And Upload All ({count})"))
         {
             // if (EditorUtility.DisplayDialog("Confirm", $"Are you sure you want to build and upload {count.ToString()} VRChat avatars?", "Yes", "No")) {
@@ -93,7 +104,7 @@ public class VRC_Bulk_Upload : EditorWindow {
         }
         EditorGUI.EndDisabledGroup();
 
-        EditorGUILayout.EndScrollView();
+		EditorGUILayout.EndScrollView();
     }
 
 // HELPERS
@@ -171,6 +182,7 @@ public class VRC_Bulk_Upload : EditorWindow {
 
             // TODO: Support thumbnail image upload?
             // TODO: Add/Support a Cancel button?
+            await AddCopyrightAgreement(blueprintId);
             await builder.BuildAndUpload(vrcAvatarDescriptor.gameObject, vrcAvatar, cancellationToken: BuildAndUploadCancellationToken.Token);
         
             SetAvatarState(vrcAvatarDescriptor, State.Success);
@@ -196,7 +208,38 @@ public class VRC_Bulk_Upload : EditorWindow {
         }
     }
 
-    GameObject[] GetRootObjects() {
+    private static bool hasAgreedToCopyrightAgreement = false;
+	public static bool AskForCopyrightAgreement()
+	{
+		hasAgreedToCopyrightAgreement = EditorUtility.DisplayDialog("VRC Bulk Upload: VRCSDK Agreement",
+			VRCCopyrightAgreement.AgreementText + "\n\nI authorize this tool to sign this agreement on my behalf for ALL bulked avatars this Unity session",
+			"OK", "NO");
+
+        return hasAgreedToCopyrightAgreement;
+	}
+
+	//MIT License Copyright(c) 2023 anatawa12
+	//https://github.com/anatawa12/ContinuousAvatarUploader
+	private static async Task AddCopyrightAgreement(string blueprint)
+	{
+		const string key = "VRCSdkControlPanel.CopyrightAgreement.ContentList";
+		var keyText = SessionState.GetString(key, "");
+		var list = string.IsNullOrEmpty(keyText)
+			? new List<string>()
+			: SessionState.GetString(key, "").Split(';').ToList();
+		if (list.Contains(blueprint)) return;
+		list.Add(blueprint);
+		SessionState.SetString(key, string.Join(";", list));
+
+		await VRCApi.ContentUploadConsent(new VRCAgreement {
+			AgreementCode = "content.copyright.owned",
+			AgreementFulltext = VRCCopyrightAgreement.AgreementText,
+			ContentId = blueprint,
+			Version = 1,
+		});
+	}
+
+	GameObject[] GetRootObjects() {
         int countLoaded = SceneManager.sceneCount;
         Scene[] scenes = new Scene[countLoaded];
  
@@ -379,18 +422,19 @@ public class VRC_Bulk_Upload : EditorWindow {
                     Utils.FocusGameObject(rootObject);
                 }
 
-                EditorGUI.BeginDisabledGroup(!GetCanAvatarBeBuilt(vrcAvatarDescriptor));
+                //I never used this.
+/*                EditorGUI.BeginDisabledGroup(!GetCanAvatarBeBuilt(vrcAvatarDescriptor));
                     if (CustomGUI.TinyButtonShort("Build")) {
                        _ = BuildAvatar(vrcAvatarDescriptor);
                     }
-                EditorGUI.EndDisabledGroup();
+                EditorGUI.EndDisabledGroup();*/
 
                 if (CustomGUI.TinyButtonShort("Test"))
                 {
                     _ = BuildAndTestAvatar(vrcAvatarDescriptor);
                 }
 
-                EditorGUI.BeginDisabledGroup(!GetCanAvatarBeUploaded(vrcAvatarDescriptor));
+                EditorGUI.BeginDisabledGroup(!GetCanAvatarBeUploaded(vrcAvatarDescriptor) || !APIUser.IsLoggedIn || !hasAgreedToCopyrightAgreement);
                     if (CustomGUI.TinyButton("Build & Upload")) {
                         _ = BuildAndUploadAvatar(vrcAvatarDescriptor);
                     }

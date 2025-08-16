@@ -1,3 +1,9 @@
+# 1.1.3
+- Copyright agreement for SDK 3.8.2 support
+
+# 1.1.2
+- VPM Repo Support
+
 # 1.1.1
 - UI Improvements
 - Now checks if SDK is logged in
@@ -9,4 +15,4 @@
 - Added a timestamp to successful builds
 
 # 1.0.0
-- first release
+- First release
