@@ -126,14 +126,15 @@ public class VRC_Bulk_Upload : EditorWindow {
         Debug.Log($"VRC_Bulk_Upload :: Building and uploading {avatars.Length} VRChat avatars...");
 
         foreach (var avatar in avatars) {
-            if (GetCanAvatarBeUploaded(avatar))
+            if (GetAvatarUploadableStatus(avatar) == 1)
             {
                 await BuildAndUploadAvatar(avatar);
             }
         }
     }
 
-    async Task BuildAvatar(VRCAvatarDescriptor vrcAvatarDescriptor) {
+    //Unused
+/*    async Task BuildAvatar(VRCAvatarDescriptor vrcAvatarDescriptor) {
         Debug.Log($"VRC_Bulk_Upload :: Building '{vrcAvatarDescriptor.gameObject.name}'...");
         
         try {
@@ -153,7 +154,7 @@ public class VRC_Bulk_Upload : EditorWindow {
             SetAvatarState(vrcAvatarDescriptor, State.Failed, e);
             Debug.LogError(e);
         }
-    }
+    }*/
 
     async Task BuildAndUploadAvatar(VRCAvatarDescriptor vrcAvatarDescriptor) {
         if (!APIUser.IsLoggedIn)
@@ -283,7 +284,7 @@ public class VRC_Bulk_Upload : EditorWindow {
 
         foreach (var avatar in avatars)
         {
-            if (GetCanAvatarBeUploaded(avatar))
+            if (GetAvatarUploadableStatus(avatar) == 1)
             {
                 count++;
             }
@@ -296,23 +297,27 @@ public class VRC_Bulk_Upload : EditorWindow {
         return vrcAvatarDescriptor != null && vrcAvatarDescriptor.gameObject.GetComponent<Animator>() != null;
     }
 
-    bool GetCanAvatarBeUploaded(VRCAvatarDescriptor vrcAvatarDescriptor) {
-        if (!APIUser.IsLoggedIn)
+    int GetAvatarUploadableStatus(VRCAvatarDescriptor vrcAvatarDescriptor) {
+        if (!APIUser.IsLoggedIn || !hasAgreedToCopyrightAgreement)
         {
-            return false;
+            return 0;
         }
         if (vrcAvatarDescriptor.gameObject.GetComponent<PipelineManager>() == null)
         {
-            return false;
+            return -2;
         }
         if (string.IsNullOrEmpty(vrcAvatarDescriptor.gameObject.GetComponent<PipelineManager>().blueprintId))
         {
-            return false;
+            return -2;
         }
-        return GetCanAvatarBeBuilt(vrcAvatarDescriptor);
+        if (!GetCanAvatarBeBuilt(vrcAvatarDescriptor))
+        {
+            return -1;
+		}
+        return 1;
     }
 
-    static AvatarState GetAvatarRootState(VRCAvatarDescriptor vrcAvatarDescriptor) {
+	static AvatarState GetAvatarRootState(VRCAvatarDescriptor vrcAvatarDescriptor) {
         if (!avatarStates.ContainsKey(vrcAvatarDescriptor.gameObject.name)) {
             Debug.Log("No State exists, creating...");
             avatarStates[vrcAvatarDescriptor.gameObject.name] = new AvatarState() {
@@ -434,14 +439,21 @@ public class VRC_Bulk_Upload : EditorWindow {
                     _ = BuildAndTestAvatar(vrcAvatarDescriptor);
                 }
 
-                EditorGUI.BeginDisabledGroup(!GetCanAvatarBeUploaded(vrcAvatarDescriptor) || !APIUser.IsLoggedIn || !hasAgreedToCopyrightAgreement);
+                var uploadableStatus = GetAvatarUploadableStatus(vrcAvatarDescriptor);
+
+				EditorGUI.BeginDisabledGroup(uploadableStatus != 1);
                     if (CustomGUI.TinyButton("Build & Upload")) {
                         _ = BuildAndUploadAvatar(vrcAvatarDescriptor);
                     }
                 EditorGUI.EndDisabledGroup();
 
-                //Sometimes this errors, dunno why.
-                try
+				if (uploadableStatus == -2)
+				{
+					CustomGUI.WarningLabel("No valid Blueprint ID.");
+				}
+
+				//Sometimes this errors, dunno why.
+				try
                 {
                     RenderAvatarState(vrcAvatarDescriptor);
                 }

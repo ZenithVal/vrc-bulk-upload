@@ -1,3 +1,6 @@
+# 1.1.4
+- Valid Blueprint ID Check
+
 # 1.1.3
 - Copyright agreement for SDK 3.8.2 support
 

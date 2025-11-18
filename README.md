@@ -1,6 +1,6 @@
 # VRC Bulk Upload
 A Unity plugin that uploads all active VRChat avatars across your open scenes.<br>
-Tested in Unity 2022.3.22f1 with VRC SDK 3.8.2 (VCC/Alcom).
+Tested in Unity 2022.3.22f1 with VRC SDK 3.9.1-beta.2 (VCC/Alcom).
 
 To use this tool you must authorize it to sign the VRCSDK copyright agreement on your behalf.
 

@@ -1,6 +1,7 @@
 using UnityEditor;
 using UnityEngine;
 using VRC.SDK3.Avatars.ScriptableObjects;
+using VRC.SDKBase.Validation.Performance;
 
 namespace PeanutTools_VRC_Bulk_Upload {
     class CustomGUI {
@@ -18,6 +19,25 @@ namespace PeanutTools_VRC_Bulk_Upload {
             italicStyle.fontStyle = FontStyle.Italic;
             GUILayout.Label(text, italicStyle);
         }
+
+  //      public static void PerfInfoDisplayLevel(int rank)
+  //      {
+  //          switch (rank)
+  //          {
+  //              case 0:
+		//			break;
+  //              case 1:
+  //                  break;
+  //              case 2:
+  //                  break;
+  //              case 3:
+  //                  break;
+  //              case 4;
+  //                  break;
+  //              case 5;
+  //                  break;
+		//	}
+		//}
 
         public static void WarningLabel(string text)
         {
