@@ -260,21 +260,66 @@ public class VRC_Bulk_Upload : EditorWindow {
         return rootObjects.ToArray();
     }
 
+    GameObject[] GetActiveVrchatAvatarGameObjects() {
+        GameObject[] rootObjects = GetRootObjects();
+    
+        var avatarGameObjects = new List<GameObject>();
+
+        foreach (var rootObject in rootObjects) {
+            if (!rootObject.activeInHierarchy) continue; // Skip inactive root objects
+
+            // Recursively check this root and all its children
+            GetAvatarGameObjectsInChildren(rootObject.transform, avatarGameObjects);
+        }
+
+        return avatarGameObjects.ToArray();
+    }
+
+    void GetAvatarGameObjectsInChildren(Transform parent, List<GameObject> avatarGameObjects) {
+        // Check the current object for a VRCAvatarDescriptor
+        VRCAvatarDescriptor vrcAvatarDescriptor = parent.GetComponent<VRCAvatarDescriptor>();
+        if (vrcAvatarDescriptor != null) {
+            avatarGameObjects.Add(parent.gameObject);
+        }
+
+        // Recursively check each child
+        foreach (Transform child in parent) {
+            if (child.gameObject.activeInHierarchy) { // Only check active children
+                GetAvatarGameObjectsInChildren(child, avatarGameObjects);
+            }
+        }
+    }
+
+    
+    
     VRCAvatarDescriptor[] GetActiveVrchatAvatars() {
         GameObject[] rootObjects = GetRootObjects();
         
         var vrcAvatarDescriptors = new List<VRCAvatarDescriptor>();
 
         foreach (var rootObject in rootObjects) {
-            VRCAvatarDescriptor vrcAvatarDescriptor = rootObject.GetComponent<VRCAvatarDescriptor>();
-            bool isActive = rootObject.activeInHierarchy;
+            if (!rootObject.activeInHierarchy) continue; // Skip inactive root objects
 
-            if (isActive && vrcAvatarDescriptor != null) {
-                vrcAvatarDescriptors.Add(vrcAvatarDescriptor);
-            }
+            // Recursively check this root and all its children
+            GetAvatarDescriptorsInChildren(rootObject.transform, vrcAvatarDescriptors);
         }
 
         return vrcAvatarDescriptors.ToArray();
+    }
+
+    void GetAvatarDescriptorsInChildren(Transform parent, List<VRCAvatarDescriptor> descriptors) {
+        // Check the current object for a VRCAvatarDescriptor
+        VRCAvatarDescriptor vrcAvatarDescriptor = parent.GetComponent<VRCAvatarDescriptor>();
+        if (vrcAvatarDescriptor != null) {
+            descriptors.Add(vrcAvatarDescriptor);
+        }
+
+        // Recursively check each child
+        foreach (Transform child in parent) {
+            if (child.gameObject.activeInHierarchy) { // Only check active children
+                GetAvatarDescriptorsInChildren(child, descriptors);
+            }
+        }
     }
 
     int GetUploadableCount()
@@ -404,8 +449,8 @@ public class VRC_Bulk_Upload : EditorWindow {
 // RENDER GUI
 
     void RenderAllAvatarsAndInScene() {
-        GameObject[] rootObjects = GetRootObjects();
-
+        GameObject[] rootObjects = GetActiveVrchatAvatarGameObjects();
+        
         var hasRenderedAtLeastOne = false;
 
         foreach (var rootObject in rootObjects) {
