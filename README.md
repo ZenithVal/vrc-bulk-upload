@@ -9,7 +9,7 @@ To use this tool you must authorize it to sign the VRCSDK copyright agreement on
 ## Install Options
 
 ### **A:** VCC Find my listing [here](https://zenithval.github.io/vpm/), and info how to use it [here](https://github.com/ZenithVal/vpm#readme).
-### **B:** Download the latest Unity Package [here](https://github.com/ZenithVal/vrc-bulk-upload/releases) and import it into your project. 
+### **B:** Download the [latest zip](https://github.com/ZenithVal/vrc-bulk-upload/releases) and install it into your project. 
 
 ## Usage
 
