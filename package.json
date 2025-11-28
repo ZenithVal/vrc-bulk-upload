@@ -1,14 +1,14 @@
 {
   "name": "io.github.zenithval.vrc-bulk-upload",
   "displayName": "VRC bulk Upload",
-  "version": "1.1.2",
+  "version": "1.1.5",
   "description": "A tool for batch uploading all active VRChat avatars across open scenes.",
   "url": "https://github.com/ZenithVal/vrc-bulk-upload",
   "author": {
     "name": "ZenithVal & imagitama"
   },
   "vpmDependencies": {
-    "com.vrchat.avatars": ">=3.1.0"
+    "com.vrchat.avatars": ">=3.8.2"
   },
   "legacyFolders": {
     "Assets\\Plugins\\VRC_Bulk_Upload": "25f5082b7e32c3a4596ef2aa149e3e82"

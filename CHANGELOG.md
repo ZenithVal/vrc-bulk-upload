@@ -1,3 +1,6 @@
+# 1.1.5
+- Fixed edge case for avatar detection
+
 # 1.1.4
 - Valid Blueprint ID Check
 
