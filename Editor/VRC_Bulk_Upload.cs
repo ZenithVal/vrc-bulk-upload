@@ -93,16 +93,24 @@ public class VRC_Bulk_Upload : EditorWindow {
         CustomGUI.LineGap();
         CustomGUI.HorizontalRule();
 
-        int count = GetUploadableCount();
+        int uploadableCount = GetUploadableCount();
 
         EditorGUI.BeginDisabledGroup(!APIUser.IsLoggedIn || !hasAgreedToCopyrightAgreement);
-        if (CustomGUI.PrimaryButton($"Build And Upload All ({count})"))
+        if (CustomGUI.PrimaryButton($"Build And Upload All ({uploadableCount})"))
         {
             // if (EditorUtility.DisplayDialog("Confirm", $"Are you sure you want to build and upload {count.ToString()} VRChat avatars?", "Yes", "No")) {
             _ = BuildAndUploadAllAvatars();
             // }
         }
         EditorGUI.EndDisabledGroup();
+
+        int testableCount = GetTestableCount();
+
+        CustomGUI.LineGap();
+        if (CustomGUI.PrimaryButton($"Build And Test All ({testableCount})"))
+        {
+            BuildAndTestAllAvatars();
+        }
 
 		EditorGUILayout.EndScrollView();
     }
@@ -129,6 +137,18 @@ public class VRC_Bulk_Upload : EditorWindow {
             if (GetAvatarUploadableStatus(avatar) == 1)
             {
                 await BuildAndUploadAvatar(avatar);
+            }
+        }
+    }
+
+    async Task BuildAndTestAllAvatars() {
+        var avatars = GetActiveVrchatAvatars();
+        Debug.Log($"VRC_Bulk_Upload :: Building and testing {avatars.Length} VRChat avatars...");
+
+        foreach (var avatar in avatars) {
+            if (GetCanAvatarBeBuilt(avatar))
+            {
+                await BuildAndTestAvatar(avatar);
             }
         }
     }
@@ -330,6 +350,22 @@ public class VRC_Bulk_Upload : EditorWindow {
         foreach (var avatar in avatars)
         {
             if (GetAvatarUploadableStatus(avatar) == 1)
+            {
+                count++;
+            }
+        }
+
+        return count;
+    }
+
+    int GetTestableCount()
+    {
+        var avatars = GetActiveVrchatAvatars();
+        int count = 0;
+
+        foreach (var avatar in avatars)
+        {
+            if (GetCanAvatarBeBuilt(avatar))
             {
                 count++;
             }
