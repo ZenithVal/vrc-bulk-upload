@@ -1,7 +1,7 @@
 {
   "name": "io.github.zenithval.vrc-bulk-upload",
   "displayName": "VRC bulk Upload",
-  "version": "1.1.5",
+  "version": "1.2.0",
   "description": "A tool for batch uploading all active VRChat avatars across open scenes.",
   "url": "https://github.com/ZenithVal/vrc-bulk-upload",
   "author": {
